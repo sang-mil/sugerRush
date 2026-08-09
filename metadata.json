@@ -1,0 +1,6 @@
+{
+  "name": "SUGAR RUSH",
+  "description": "Grow Sweet. Fight Hard. Real-time PvP Growth Arcade Game MVP with Sugar Decay and Bounty mechanics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

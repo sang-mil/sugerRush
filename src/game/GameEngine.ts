@@ -106,6 +106,7 @@ export class GameEngine {
   private projectilePool: Projectile[] = [];
   private topPlayer: PlayerEntity | null = null;
   private multiplayerClient?: MultiplayerClient;
+  private multiplayerRank: number | null = null;
   private activePlayers: PlayerEntity[] = [];
   private renderPlayers: PlayerEntity[] = [];
   public showDebug = false;
@@ -215,6 +216,7 @@ export class GameEngine {
     this.powerUps = [];
     this.killFeed = [];
     this.remotePlayers = [];
+    this.multiplayerRank = null;
     this.remoteProjectiles = [];
     this.multiplayerClient = multiplayerClient;
 
@@ -376,6 +378,7 @@ export class GameEngine {
 
   public applyRemoteSelfState(state: RemotePlayerState) {
     if (!this.player || state.hp === undefined) return;
+    if (state.rank !== undefined) this.multiplayerRank = state.rank;
     this.player.hp = Math.max(0, Math.min(this.player.maxHp, state.hp));
     if (state.isDead) this.player.isDead = true;
   }
@@ -812,7 +815,11 @@ export class GameEngine {
       characterId: this.player.characterId,
       x: this.player.x,
       y: this.player.y,
-      radius: this.player.radius
+      radius: this.player.radius,
+      score: this.player.score,
+      hp: this.player.hp,
+      maxHp: this.player.maxHp,
+      isDead: this.player.isDead
     });
 
     // 7. Particle System Update
@@ -2429,7 +2436,7 @@ export class GameEngine {
 
     // Sort leaderboard by score descending
     const sorted = [...allPlayers].sort((a, b) => b.score - a.score);
-    const playerRank = sorted.findIndex((p) => p.id === this.player.id) + 1;
+    const playerRank = this.multiplayerRank ?? (sorted.findIndex((p) => p.id === this.player.id) + 1);
 
     const topPlayer = sorted[0];
     const kingPlayer =

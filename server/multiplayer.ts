@@ -15,6 +15,8 @@ type PlayerState = {
   hp: number;
   maxHp: number;
   isDead: boolean;
+  score: number;
+  rank: number;
 };
 
 type ClientMessage =
@@ -27,7 +29,10 @@ const players = new Map<WebSocket, PlayerState>();
 const server = new WebSocketServer({ port });
 
 function broadcastPlayers() {
-  const payload = JSON.stringify({ type: 'players', players: [...players.values()] });
+  const rankedPlayers = [...players.values()]
+    .sort((left, right) => right.score - left.score || left.id.localeCompare(right.id))
+    .map((player, index) => ({ ...player, rank: index + 1 }));
+  const payload = JSON.stringify({ type: 'players', players: rankedPlayers });
   for (const client of players.keys()) {
     if (client.readyState === WebSocket.OPEN) client.send(payload);
   }
@@ -93,7 +98,9 @@ server.on('connection', (client) => {
         radius: 24,
         hp: characterMaxHp(characterId),
         maxHp: characterMaxHp(characterId),
-        isDead: false
+        isDead: false,
+        score: 0,
+        rank: 1
       };
       players.set(client, state);
       client.send(JSON.stringify({ type: 'welcome', id }));
@@ -108,6 +115,7 @@ server.on('connection', (client) => {
       current.x = sanitizeNumber(message.state.x, current.x, 0, worldSize);
       current.y = sanitizeNumber(message.state.y, current.y, 0, worldSize);
       current.radius = sanitizeNumber(message.state.radius, current.radius, 12, 120);
+      current.score = sanitizeNumber(message.state.score, current.score, 0, 1000000000);
       broadcastPlayers();
       return;
     }

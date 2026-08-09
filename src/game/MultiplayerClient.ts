@@ -10,6 +10,8 @@ export interface RemotePlayerState {
   hp?: number;
   maxHp?: number;
   isDead?: boolean;
+  score?: number;
+  rank?: number;
 }
 
 export interface RemoteProjectileState {

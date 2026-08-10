@@ -100,19 +100,19 @@ export const HUD: React.FC<HUDProps> = ({
   const cdPercent = Math.min(100, Math.max(0, (cd / currentChar.abilityCooldown) * 100));
 
   return (
-    <div className="absolute inset-0 pointer-events-none z-30 select-none p-2 sm:p-4 md:p-6 flex flex-col justify-between max-sm:hidden">
+    <div className="absolute inset-0 pointer-events-none z-30 select-none p-2 sm:p-4 md:p-6 flex flex-col justify-between">
       {/* TOP HEADER ROW */}
       <div className="flex items-start justify-between w-full">
         {/* Left Stats & Kill Feed */}
         <div className="flex flex-col gap-3">
           {/* Sugar & Score Card */}
-          <div className="pointer-events-auto max-w-[calc(100vw-5rem)] bg-purple-950/85 border border-purple-500/30 rounded-2xl p-2.5 sm:p-4 backdrop-blur-xl shadow-2xl flex flex-wrap items-center gap-2 sm:gap-6 text-white">
+          <div className="pointer-events-auto max-w-[calc(100vw-5rem)] bg-purple-950/85 border border-purple-500/30 rounded-2xl p-2 sm:p-4 backdrop-blur-xl shadow-2xl flex flex-wrap items-center gap-2 sm:gap-6 text-white">
             <div>
               <span className="text-[10px] font-black tracking-wider text-pink-300 uppercase block">
                 SUGAR COLLECTED
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-lg sm:text-2xl md:text-3xl font-black text-amber-300">
+                <span className="text-base sm:text-2xl md:text-3xl font-black text-amber-300">
                   {Math.floor(player.sugar).toLocaleString()}
                 </span>
                 {decayRate > 0 && (
@@ -129,7 +129,7 @@ export const HUD: React.FC<HUDProps> = ({
               <span className="text-[10px] font-black tracking-wider text-pink-300 uppercase block">
                 TOTAL SCORE
               </span>
-              <span className="text-base sm:text-xl md:text-2xl font-black text-white">
+                <span className="text-sm sm:text-xl md:text-2xl font-black text-white">
                 {player.score.toLocaleString()}
               </span>
             </div>
@@ -140,7 +140,7 @@ export const HUD: React.FC<HUDProps> = ({
               <span className="text-[10px] font-black tracking-wider text-pink-300 uppercase block">
                 BOUNTY
               </span>
-              <span className="text-sm sm:text-lg font-black text-rose-400">
+                <span className="text-xs sm:text-lg font-black text-rose-400">
                 {player.bounty.toLocaleString()}
               </span>
             </div>
@@ -233,11 +233,11 @@ export const HUD: React.FC<HUDProps> = ({
       {/* BOTTOM CONTROLS & STATUS BAR */}
       <div className="flex items-end justify-between w-full pointer-events-auto max-sm:pb-36">
         {/* HP Bar & Ability Wheel */}
-        <div className="flex items-center gap-4 bg-purple-950/85 border border-purple-500/30 rounded-3xl p-4 backdrop-blur-xl shadow-2xl text-white">
+        <div className="flex items-center gap-2 sm:gap-4 bg-purple-950/85 border border-purple-500/30 rounded-2xl sm:rounded-3xl p-2 sm:p-4 backdrop-blur-xl shadow-2xl text-white max-w-[calc(100vw-8rem)]">
           {/* Ability Icon & Cooldown Wheel */}
-          <div className="relative w-16 h-16 rounded-2xl bg-purple-900/60 border-2 border-purple-500/40 flex flex-col items-center justify-center overflow-hidden shadow-lg">
-            <span className="text-2xl">{currentChar.icon}</span>
-            <span className="text-[10px] font-black text-pink-300 tracking-wider">SPACE</span>
+          <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-purple-900/60 border-2 border-purple-500/40 flex flex-col items-center justify-center overflow-hidden shadow-lg shrink-0">
+            <span className="text-xl sm:text-2xl">{currentChar.icon}</span>
+            <span className="text-[8px] sm:text-[10px] font-black text-pink-300 tracking-wider">SPACE</span>
 
             {cd > 0 && (
               <div
@@ -250,7 +250,7 @@ export const HUD: React.FC<HUDProps> = ({
           </div>
 
           {/* Ability Text & HP Bar */}
-          <div className="flex flex-col gap-1.5 w-48 md:w-60">
+          <div className="flex flex-col gap-1 sm:gap-1.5 w-32 sm:w-48 md:w-60">
             {/* Active Power-up Buff Badges */}
             {(player.speedBoostTimeRemaining > 0 || player.damageBoostTimeRemaining > 0 || player.powerUpShieldTimeRemaining > 0 || player.isShielded || (player.rainbowTimeRemaining && player.rainbowTimeRemaining > 0)) && (
               <div className="flex items-center gap-1.5 flex-wrap mb-0.5">

@@ -91,6 +91,7 @@ export class GameEngine {
 
   // Inputs
   public keys: Record<string, boolean> = {};
+  public mobileMove: { x: number; y: number } = { x: 0, y: 0 };
   public mousePos: { x: number; y: number } = { x: 0, y: 0 };
   public isMouseDown: boolean = false;
 
@@ -1014,6 +1015,8 @@ export class GameEngine {
     if (this.keys['KeyS'] || this.keys['ArrowDown']) dy += 1;
     if (this.keys['KeyA'] || this.keys['ArrowLeft']) dx -= 1;
     if (this.keys['KeyD'] || this.keys['ArrowRight']) dx += 1;
+    dx += this.mobileMove.x;
+    dy += this.mobileMove.y;
 
     if (dx !== 0 && dy !== 0) {
       dx *= 0.7071;

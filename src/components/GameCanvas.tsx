@@ -10,6 +10,7 @@ interface GameCanvasProps {
 export const GameCanvas: React.FC<GameCanvasProps> = ({ engineRef, onPauseToggle }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const joystickRef = useRef<HTMLDivElement | null>(null);
+  const joystickKnobRef = useRef<HTMLDivElement | null>(null);
   const aimJoystickRef = useRef<HTMLDivElement | null>(null);
   const onPauseToggleRef = useRef(onPauseToggle);
   onPauseToggleRef.current = onPauseToggle;
@@ -18,6 +19,10 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ engineRef, onPauseToggle
     const engine = engineRef.current;
     if (!engine) return;
     for (const key of ['KeyW', 'KeyA', 'KeyS', 'KeyD']) engine.keys[key] = false;
+    engine.mobileMove = { x: 0, y: 0 };
+    if (joystickKnobRef.current) {
+      joystickKnobRef.current.style.transform = 'translate(-50%, -50%)';
+    }
   };
 
   const updateJoystick = (clientX: number, clientY: number) => {
@@ -28,10 +33,21 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ engineRef, onPauseToggle
     const rect = joystick.getBoundingClientRect();
     const dx = clientX - (rect.left + rect.width / 2);
     const dy = clientY - (rect.top + rect.height / 2);
-    const threshold = rect.width * 0.16;
     clearJoystick();
-    if (Math.abs(dx) > threshold) engine.keys[dx < 0 ? 'KeyA' : 'KeyD'] = true;
-    if (Math.abs(dy) > threshold) engine.keys[dy < 0 ? 'KeyW' : 'KeyS'] = true;
+    const maxDistance = rect.width * 0.34;
+    const distance = Math.min(Math.hypot(dx, dy), maxDistance);
+    const angle = Math.atan2(dy, dx);
+    if (joystickKnobRef.current) {
+      const knobX = Math.cos(angle) * distance;
+      const knobY = Math.sin(angle) * distance;
+      joystickKnobRef.current.style.transform = `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
+    }
+    if (Math.hypot(dx, dy) > rect.width * 0.1) {
+      engine.mobileMove = {
+        x: Math.max(-1, Math.min(1, dx / maxDistance)),
+        y: Math.max(-1, Math.min(1, dy / maxDistance))
+      };
+    }
   };
 
   const clearAimJoystick = () => {
@@ -168,7 +184,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ engineRef, onPauseToggle
       <div className="pointer-events-none absolute inset-0 z-40 touch-none sm:hidden">
         <div
           ref={joystickRef}
-          className="pointer-events-auto absolute bottom-8 left-6 h-28 w-28 rounded-full border-2 border-white/30 bg-slate-900/45 shadow-xl backdrop-blur-sm sm:h-32 sm:w-32 sm:left-8"
+          className="pointer-events-auto absolute bottom-5 left-4 h-36 w-36 rounded-full border-2 border-white/30 bg-slate-900/45 shadow-xl backdrop-blur-sm"
           onPointerDown={(event) => {
             event.currentTarget.setPointerCapture(event.pointerId);
             updateJoystick(event.clientX, event.clientY);
@@ -177,13 +193,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ engineRef, onPauseToggle
           onPointerUp={() => clearJoystick()}
           onPointerCancel={() => clearJoystick()}
         >
-          <div className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full border border-pink-300/60 bg-pink-500/70 shadow-lg" />
+          <div ref={joystickKnobRef} className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-pink-300/60 bg-pink-500/70 shadow-lg" />
         </div>
 
         <div
           ref={aimJoystickRef}
           aria-label="Aim and attack"
-          className="pointer-events-auto absolute bottom-6 right-4 flex h-32 w-32 items-center justify-center rounded-full border-2 border-rose-300/70 bg-rose-950/45 text-white shadow-xl backdrop-blur-sm sm:right-8 sm:h-36 sm:w-36"
+          className="pointer-events-auto absolute bottom-5 right-4 flex h-36 w-36 items-center justify-center rounded-full border-2 border-rose-300/70 bg-rose-950/45 text-white shadow-xl backdrop-blur-sm"
           onPointerDown={(event) => {
             event.currentTarget.setPointerCapture(event.pointerId);
             updateAimJoystick(event.clientX, event.clientY);
@@ -200,7 +216,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ engineRef, onPauseToggle
         <button
           type="button"
           aria-label="Use ability"
-          className="pointer-events-auto absolute bottom-32 right-24 flex h-14 w-14 items-center justify-center rounded-full border-2 border-amber-300/70 bg-amber-500/70 text-white shadow-xl active:scale-95 sm:bottom-36 sm:right-36"
+          className="pointer-events-auto absolute bottom-40 right-28 flex h-16 w-16 items-center justify-center rounded-full border-2 border-amber-300/70 bg-amber-500/70 text-white shadow-xl active:scale-95"
           onPointerDown={() => {
             if (engineRef.current) engineRef.current.keys.Space = true;
           }}

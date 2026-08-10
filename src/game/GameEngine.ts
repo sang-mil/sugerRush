@@ -1587,9 +1587,6 @@ export class GameEngine {
 
     this.remotePlayers.forEach((player) => this.drawRemotePlayer(player, worldToScreen));
 
-    // 5b. Draw King Directional Marker
-    this.drawKingDirectionalMarker();
-
     // 6. Draw Particle System Effects & Damage Numbers
     this.particleSystem.draw(this.ctx, worldToScreen);
 

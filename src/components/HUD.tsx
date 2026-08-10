@@ -1,9 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { GameSnapshot } from '../types/game';
-import { CHARACTERS, WORLD_SIZE } from '../game/constants';
-import { Leaderboard } from './Leaderboard';
-import { soundManager } from '../game/audio';
-import { Volume2, VolumeX, Pause, Sparkles, Flame, ShieldAlert, Heart, Radar } from 'lucide-react';
+import { CHARACTERS } from '../game/constants';
+import { Volume2, VolumeX, Pause, Sparkles, Heart } from 'lucide-react';
 
 interface HUDProps {
   snapshot: GameSnapshot | null;
@@ -18,83 +16,9 @@ export const HUD: React.FC<HUDProps> = ({
   isAudioMuted,
   onToggleAudio
 }) => {
-  const minimapRef = useRef<HTMLCanvasElement | null>(null);
-
-  // Draw Minimap
-  useEffect(() => {
-    if (!snapshot || !minimapRef.current) return;
-    const canvas = minimapRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Map background
-    ctx.fillStyle = 'rgba(23, 14, 32, 0.85)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const scale = canvas.width / WORLD_SIZE;
-
-    // Draw Hot Zone on Minimap
-    if (snapshot.hotZone) {
-      const hz = snapshot.hotZone;
-      const hx = hz.x * scale;
-      const hy = hz.y * scale;
-      const hr = hz.radius * scale;
-
-      ctx.fillStyle = hz.isWarning ? 'rgba(239, 68, 68, 0.4)' : 'rgba(245, 158, 11, 0.28)';
-      ctx.beginPath();
-      ctx.arc(hx, hy, hr, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = hz.isWarning ? '#EF4444' : '#F59E0B';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    }
-
-    // Draw King on Minimap
-    if (snapshot.kingPlayer) {
-      const kx = snapshot.kingPlayer.x * scale;
-      const ky = snapshot.kingPlayer.y * scale;
-
-      ctx.fillStyle = '#FBBF24';
-      ctx.beginPath();
-      ctx.arc(kx, ky, 5, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
-
-    // Draw player dot
-    const p = snapshot.player;
-    if (!p.isDead) {
-      const px = p.x * scale;
-      const py = p.y * scale;
-
-      ctx.fillStyle = '#FDE047'; // Bright yellow
-      ctx.beginPath();
-      ctx.arc(px, py, 4, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Pulsing player ring
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(px, py, 7, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-
-    // Border
-    ctx.strokeStyle = 'rgba(236, 72, 153, 0.4)';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(0, 0, canvas.width, canvas.height);
-  }, [snapshot]);
-
   if (!snapshot) return null;
 
-  const { player, topPlayers, playerRank, decayRate, dangerLevel, killEvents } = snapshot;
+  const { player, decayRate } = snapshot;
   const currentChar = CHARACTERS[player.characterId] || CHARACTERS.cookie;
   const cd = player.abilityCooldownRemaining;
   const cdPercent = Math.min(100, Math.max(0, (cd / currentChar.abilityCooldown) * 100));
@@ -146,24 +70,9 @@ export const HUD: React.FC<HUDProps> = ({
             </div>
           </div>
 
-          {/* Kill Feed Log */}
-          <div className="space-y-1.5 max-w-sm max-sm:hidden">
-            {killEvents.slice(0, 3).map((k) => (
-              <div
-                key={k.id}
-                className="bg-purple-950/70 border border-purple-500/20 px-3 py-1.5 rounded-xl backdrop-blur-md text-xs font-bold text-pink-200 flex items-center gap-2 animate-fade-in"
-              >
-                <Flame className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                <span>
-                  <strong className="text-amber-300">{k.killerName}</strong> defeated{' '}
-                  <strong className="text-rose-300">{k.victimName}</strong> (+{k.bountyClaimed} Bounty)
-                </span>
-              </div>
-            ))}
-          </div>
         </div>
 
-        {/* Right Top Leaderboard & Control Buttons */}
+        {/* Right Top Control Buttons */}
         <div className="flex flex-col items-end gap-3 pointer-events-auto">
           <div className="flex items-center gap-1 sm:gap-2">
             <button
@@ -183,52 +92,8 @@ export const HUD: React.FC<HUDProps> = ({
             </button>
           </div>
 
-            <div className="hidden sm:block">
-              <Leaderboard topPlayers={topPlayers} playerRank={playerRank} />
-            </div>
         </div>
       </div>
-
-      {/* CENTER TOP MAP ANNOUNCEMENT BANNER */}
-      {snapshot.activeAnnouncement && (
-        <div
-          className="absolute top-20 left-1/2 -translate-x-1/2 pointer-events-auto border-2 rounded-2xl px-6 py-3 backdrop-blur-xl shadow-2xl flex flex-col items-center gap-0.5 animate-bounce z-50 text-center"
-          style={{
-            borderColor: snapshot.activeAnnouncement.color,
-            backgroundColor: 'rgba(23, 14, 32, 0.92)'
-          }}
-        >
-          <span
-            className="text-base md:text-lg font-black tracking-widest uppercase"
-            style={{ color: snapshot.activeAnnouncement.color }}
-          >
-            {snapshot.activeAnnouncement.title}
-          </span>
-          <span className="text-xs font-bold text-white/90">
-            {snapshot.activeAnnouncement.subtitle}
-          </span>
-        </div>
-      )}
-
-      {/* KING OF SUGAR BANNER */}
-      {snapshot.kingPlayer && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-auto bg-amber-500/20 border-2 border-amber-400 rounded-full px-5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_rgba(245,158,11,0.4)] flex items-center gap-2 text-amber-200 font-black text-xs tracking-wider uppercase">
-          <span className="text-base">👑</span>
-          <span>
-            KING OF SUGAR: <strong className="text-white">{snapshot.kingPlayer.name}</strong> (${snapshot.kingPlayer.bounty})
-          </span>
-        </div>
-      )}
-
-      {/* CENTER TOP DANGER LEVEL WARNING */}
-      {(dangerLevel === 'HIGH' || dangerLevel === 'DANGER') && (
-        <div className="absolute top-24 left-1/2 -translate-x-1/2 pointer-events-auto bg-rose-950/80 border-2 border-rose-500 rounded-full px-6 py-2 backdrop-blur-xl shadow-[0_0_24px_rgba(239,68,68,0.5)] flex items-center gap-2 text-rose-200 font-black text-sm tracking-widest uppercase animate-pulse">
-          <ShieldAlert className="w-5 h-5 text-rose-400" />
-          <span>
-            ⚠ {dangerLevel === 'DANGER' ? 'CRITICAL HIGH VALUE TARGET!' : 'HIGH VALUE TARGET (BOUNTY HIGH)'}
-          </span>
-        </div>
-      )}
 
       {/* BOTTOM CONTROLS & STATUS BAR */}
       <div className="flex items-end justify-between w-full pointer-events-auto max-sm:pb-36">
@@ -309,19 +174,6 @@ export const HUD: React.FC<HUDProps> = ({
           </div>
         </div>
 
-        {/* Bottom Right Minimap */}
-        <div className="relative max-sm:hidden bg-purple-950/85 border border-purple-500/30 rounded-2xl p-2 backdrop-blur-xl shadow-2xl flex flex-col items-center">
-          <div className="flex items-center gap-1 text-[10px] font-black text-pink-300 mb-1 tracking-wider uppercase">
-            <Radar className="w-3 h-3 text-pink-400" />
-            <span>RADAR MINIMAP</span>
-          </div>
-          <canvas
-            ref={minimapRef}
-            width={120}
-            height={120}
-            className="rounded-xl border border-purple-500/30"
-          />
-        </div>
       </div>
     </div>
   );

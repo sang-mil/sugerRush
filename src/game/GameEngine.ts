@@ -613,7 +613,7 @@ export class GameEngine {
         p.eatPopTimer = 0.15; // Scale pop animation trigger
         this.updatePlayerGrowthStats(p);
 
-        let label = `+${sugarGain} Sugar`;
+        let label: string | null = null;
         let labelColor = sugar.color;
 
         if (sugar.type === 'golden') {
@@ -639,7 +639,9 @@ export class GameEngine {
           if (p.id === this.player.id) soundManager.playSugarPickup();
         }
 
-        this.particleSystem.addFloatingText(sugar.x, sugar.y, label, labelColor, 15);
+        if (label) {
+          this.particleSystem.addFloatingText(sugar.x, sugar.y, label, labelColor, 15);
+        }
       });
 
       // Collect Power-Ups

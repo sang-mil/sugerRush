@@ -4,6 +4,7 @@ class SoundManager {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
   private masterGain: GainNode | null = null;
+  private lastSugarPickupTime = 0;
 
   constructor() {
     // Lazy initialize AudioContext on user interaction
@@ -43,6 +44,9 @@ class SoundManager {
   // Play sugar pickup sound (cheerful sweet pitch chime)
   public playSugarPickup(comboMultiplier = 1) {
     if (this.isMuted) return;
+    const now = performance.now();
+    if (now - this.lastSugarPickupTime < 80) return;
+    this.lastSugarPickupTime = now;
     this.initCtx();
     if (!this.ctx || !this.masterGain) return;
 

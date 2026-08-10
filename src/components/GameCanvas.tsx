@@ -15,6 +15,16 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ engineRef, onPauseToggle
   const onPauseToggleRef = useRef(onPauseToggle);
   onPauseToggleRef.current = onPauseToggle;
 
+  const getCanvasPoint = (clientX: number, clientY: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: clientX, y: clientY };
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (clientX - rect.left) * (canvas.width / rect.width),
+      y: (clientY - rect.top) * (canvas.height / rect.height)
+    };
+  };
+
   const clearJoystick = () => {
     const engine = engineRef.current;
     if (!engine) return;
@@ -67,9 +77,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ engineRef, onPauseToggle
 
     const directionX = dx / distance;
     const directionY = dy / distance;
+    const canvasElement = canvasRef.current;
+    if (!canvasElement) return;
     engine.mousePos = {
-      x: window.innerWidth / 2 + directionX * 180,
-      y: window.innerHeight / 2 + directionY * 180
+      x: canvasElement.width / 2 + directionX * 180,
+      y: canvasElement.height / 2 + directionY * 180
     };
     engine.isMouseDown = true;
   };
@@ -78,10 +90,14 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ engineRef, onPauseToggle
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Handle Window Resize
+    // Keep a predictable internal render size across devices and DPR values.
     const handleResize = () => {
-      canvas.width = Math.max(1, Math.floor(window.innerWidth));
-      canvas.height = Math.max(1, Math.floor(window.innerHeight));
+      const maxRenderPixels = 1280 * 720;
+      const width = Math.max(1, window.innerWidth);
+      const height = Math.max(1, window.innerHeight);
+      const scale = Math.min(1, Math.sqrt(maxRenderPixels / (width * height)));
+      canvas.width = Math.max(1, Math.floor(width * scale));
+      canvas.height = Math.max(1, Math.floor(height * scale));
       if (engineRef.current) {
         engineRef.current.camera.resize(canvas.width, canvas.height);
       }
@@ -116,7 +132,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ engineRef, onPauseToggle
     // Mouse Listeners
     const handleMouseMove = (e: MouseEvent) => {
       if (engineRef.current) {
-        engineRef.current.mousePos = { x: e.clientX, y: e.clientY };
+        engineRef.current.mousePos = getCanvasPoint(e.clientX, e.clientY);
       }
     };
 
@@ -161,12 +177,12 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ engineRef, onPauseToggle
         onPointerDown={(event) => {
           if (event.pointerType !== 'touch' || !engineRef.current) return;
           event.currentTarget.setPointerCapture(event.pointerId);
-          engineRef.current.mousePos = { x: event.clientX, y: event.clientY };
+          engineRef.current.mousePos = getCanvasPoint(event.clientX, event.clientY);
           engineRef.current.isMouseDown = true;
         }}
         onPointerMove={(event) => {
           if (event.pointerType === 'touch' && engineRef.current?.isMouseDown) {
-            engineRef.current.mousePos = { x: event.clientX, y: event.clientY };
+            engineRef.current.mousePos = getCanvasPoint(event.clientX, event.clientY);
           }
         }}
         onPointerUp={(event) => {

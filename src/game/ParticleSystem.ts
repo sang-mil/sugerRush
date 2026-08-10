@@ -11,14 +11,14 @@ export class ParticleSystem {
   public particles: PooledParticle[] = [];
   private pool: PooledParticle[] = [];
   private idCounter = 0;
-  private maxParticles = 150;
+  private readonly maxParticles = 90;
 
   // Adaptive Quality FPS Tracking
   private frameTimes: number[] = [];
   private frameTimeIndex = 0;
   private frameTimeTotal = 0;
   private currentFps = 60;
-  public qualityLevel: 'HIGH' | 'MEDIUM' | 'LOW' = 'HIGH';
+  public qualityLevel: 'HIGH' | 'MEDIUM' | 'LOW' = 'MEDIUM';
 
   constructor() {
     // Pre-allocate object pool
@@ -56,16 +56,6 @@ export class ParticleSystem {
 
     this.currentFps = Math.round(this.frameTimeTotal / this.frameTimes.length);
 
-    if (this.currentFps >= 55) {
-      this.qualityLevel = 'HIGH';
-      this.maxParticles = 150;
-    } else if (this.currentFps >= 45) {
-      this.qualityLevel = 'MEDIUM';
-      this.maxParticles = 100;
-    } else {
-      this.qualityLevel = 'LOW';
-      this.maxParticles = 70;
-    }
   }
 
   public getFps(): number {
@@ -162,8 +152,7 @@ export class ParticleSystem {
   public addBurst(x: number, y: number, color: string, count = 12, speedScale = 1, priority: ParticlePriority = 'MEDIUM') {
     // Adjust particle count based on adaptive quality
     let adjustedCount = count;
-    if (this.qualityLevel === 'MEDIUM') adjustedCount = Math.ceil(count * 0.7);
-    if (this.qualityLevel === 'LOW') adjustedCount = Math.ceil(count * 0.4);
+    adjustedCount = Math.ceil(count * 0.6);
 
     for (let i = 0; i < adjustedCount; i++) {
       const angle = Math.random() * Math.PI * 2;

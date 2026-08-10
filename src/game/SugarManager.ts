@@ -196,6 +196,7 @@ export class SugarManager {
             if (index !== -1) {
               this.sugars[index] = this.sugars[this.sugars.length - 1];
               this.sugars.pop();
+              this.gridDirty = true;
             }
           }
         }

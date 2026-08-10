@@ -306,32 +306,8 @@ export class BotAI {
       bot.facingAngle = Math.atan2(dy, dx);
     }
 
-    // Apply Separation Force from other nearby active players/bots
-    let sepX = 0;
-    let sepY = 0;
-    const minCombatSeparation = 60;
-    const perceptionRadiusSq = 8100; // 90^2
-
-    for (const other of otherPlayers) {
-      if (other.id === bot.id || other.isDead) continue;
-      const dSq = getDistanceSq(bot.x, bot.y, other.x, other.y);
-      if (dSq < perceptionRadiusSq && dSq > 0.01) {
-        const d = Math.sqrt(dSq);
-        const minCombinedRadius = (bot.radius + other.radius) * 0.9;
-        const pushDistance = Math.max(minCombinedRadius, minCombatSeparation);
-
-        if (d < pushDistance) {
-          const overlap = pushDistance - d;
-          const angle = Math.atan2(bot.y - other.y, bot.x - other.x);
-          const force = (overlap / pushDistance) * 3.5;
-          sepX += Math.cos(angle) * force;
-          sepY += Math.sin(angle) * force;
-        }
-      }
-    }
-
-    bot.vx = moveVx + sepX;
-    bot.vy = moveVy + sepY;
+    bot.vx = moveVx;
+    bot.vy = moveVy;
 
     // Target lock & Reaction Delay Handling
     let canFireNow = false;
